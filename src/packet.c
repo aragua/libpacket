@@ -8,7 +8,7 @@
 #include <net/if.h> 
 #include <arpa/inet.h>
 
-static struct sockaddr_ll target;
+static struct sockaddr_ll output;
 
 int pkt_socket( char * iface, int protocol )
 {
@@ -38,9 +38,9 @@ int pkt_socket( char * iface, int protocol )
     }
 
   memset( &target, 0x00, sizeof(struct sockaddr_ll));
-  target.sll_family = AF_PACKET;
-  target.sll_ifindex   = ifr.ifr_ifindex;
-  target.sll_protocol  = htons(protocol);
+  output.sll_family = AF_PACKET;
+  output.sll_ifindex   = ifr.ifr_ifindex;
+  output.sll_protocol  = htons(protocol);
   
   /* Is the interface up? */
   ioctl( ret_sock, SIOCGIFFLAGS, &ifr);
@@ -56,7 +56,7 @@ int pkt_socket( char * iface, int protocol )
 
 int pkt_send( int sock, void * buffer, int length  )
 {
-  return sendto( sock, buffer, length, 0, (struct sockaddr *)&target, sizeof(target));
+  return sendto( sock, buffer, length, 0, (struct sockaddr *)&output, sizeof(output));
 }
 
 int pkt_recv( int sock, void * buffer, int length )
