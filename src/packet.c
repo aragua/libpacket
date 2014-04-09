@@ -37,7 +37,7 @@ int pkt_socket( char * iface, int protocol )
       return EXIT_FAILURE;
     }
 
-  memset( &target, 0x00, sizeof(struct sockaddr_ll));
+  memset( &output, 0x00, sizeof(struct sockaddr_ll));
   output.sll_family = AF_PACKET;
   output.sll_ifindex   = ifr.ifr_ifindex;
   output.sll_protocol  = htons(protocol);
