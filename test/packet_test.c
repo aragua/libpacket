@@ -44,7 +44,7 @@ int main ( int argc, char **argv )
     int idx;
 
     printf("Testing ethernet packet ... ");
-    sock = eth_socket( argv[1], ETH_P_IP );
+    sock = eth_socket( argv[1], ETH_P_ALL );
     if ( sock < 0 )
       {
 	perror("eth_socket");
