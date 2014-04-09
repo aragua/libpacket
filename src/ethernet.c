@@ -1,6 +1,14 @@
-#include "ethernet.h"
+#include <stdlib.h>
+#include <string.h> 
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <net/if.h> 
+#include <arpa/inet.h>
 
-struct ether_header ehdr;
+#include "ethernet.h"
+#include "packet.h"
+
+static struct ether_header ehdr;
 
 int eth_socket( char * iface, int protocol )
 {
@@ -10,7 +18,7 @@ int eth_socket( char * iface, int protocol )
   if ( ret >= 0 )
     {
       struct ifreq ifr;
-      memset(&buffer, 0x00, sizeof(ifr));
+      memset(&ifr, 0x00, sizeof(ifr));
       strcpy( ifr.ifr_name, iface );
       if ( ioctl( ret, SIOCGIFHWADDR, &ifr ) >= 0 )
 	memcpy( ehdr.ether_shost, ifr.ifr_hwaddr.sa_data, ETH_ALEN );
@@ -24,11 +32,12 @@ int eth_sendto( int sock, void * buffer, int length, struct ether_addr eaddr )
   int ret = 0;
   char * buf;
 
-  /* Todo : manage a pool of buffer of size MTU in order to avoid malloc for each packet */
+  /* Todo : manage a pool of buffer in order to avoid malloc for each packet */
   buf = malloc( sizeof(ehdr) + length );
   if ( !buf )
     return -1;
-  memcpy( buf, ehdr, sizeof(ehdr) );
+  memcpy( buf, &ehdr, sizeof(ehdr) );
+  memcpy( ((struct ether_header *)buf)->ether_dhost, eaddr.ether_addr_octet, ETH_ALEN );
   memcpy( buf + sizeof(ehdr), buffer, length );
   ret = pkt_send( sock, buf, sizeof(ehdr) + length );
   free(buf);
