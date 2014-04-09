@@ -6,12 +6,26 @@
 #ifndef PACKET_SOCKET_H
 #define PACKET_SOCKET_H
 
-int pkt_socket( char * iface, int protocol );
+#include <netpacket/packet.h>
+#include <linux/ip.h>
 
-int pkt_send( int sock, void * buffer, int length );
+typedef struct pkt_ctx_s pkt_ctx_t;
+struct pkt_ctx_s
+{
+  int sock;
+  char * iface;
+  int protocol;
+  struct sockaddr_ll output;
+  struct ether_header ethhdr;
+  struct iphdr iphdr;
+};
 
-int pkt_recv( int sock, void * buffer, int length );
+pkt_ctx_t * pkt_socket( char * iface, int protocol );
 
-void pkt_close( int sock );
+int pkt_send( pkt_ctx_t * sock, void * buffer, int length );
+
+int pkt_recv( pkt_ctx_t * sock, void * buffer, int length );
+
+void pkt_close( pkt_ctx_t * sock );
 
 #endif /* PACKET_SOCKET_H */

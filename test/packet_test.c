@@ -12,7 +12,7 @@
 
 int main ( int argc, char **argv )
 {
-  int sock = 0;
+  pkt_ctx_t * sock = 0;
 
   if ( argc <= 1 )
     {

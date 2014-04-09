@@ -8,21 +8,28 @@
 #include <net/if.h> 
 #include <arpa/inet.h>
 
-static struct sockaddr_ll output;
+#include "packet.h"
 
-int pkt_socket( char * iface, int protocol )
+pkt_ctx_t * pkt_socket( char * iface, int protocol )
 {
-  int ret_sock;
+  pkt_ctx_t * ret_sock;
   struct ifreq ifr;
   
   if ( !iface )
-    return EXIT_FAILURE;
+    return NULL;
   
-  ret_sock = socket(AF_PACKET, SOCK_RAW, htons(protocol) );
-  if ( ret_sock < 0)
+  ret_sock = malloc(sizeof(pkt_ctx_t ));
+  if ( !ret_sock )
+    return NULL;
+
+  ret_sock->iface = strdup(iface);
+  ret_sock->protocol = protocol;
+    
+  ret_sock->sock = socket(AF_PACKET, SOCK_RAW, htons(protocol) );
+  if ( ret_sock->sock < 0)
     {
       perror("socket");
-      return EXIT_FAILURE;
+      return NULL;
     }
   
   /* Get interface index */
@@ -30,41 +37,46 @@ int pkt_socket( char * iface, int protocol )
   strncpy (ifr.ifr_name, iface, sizeof(ifr.ifr_name) - 1);
   ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
   
-  if ( ioctl( ret_sock, SIOCGIFINDEX, &ifr) == -1 )
+  if ( ioctl( ret_sock->sock, SIOCGIFINDEX, &ifr) == -1 )
     {
       printf("No such interface: %s\n", iface );
-      close(ret_sock);
-      return EXIT_FAILURE;
+      close(ret_sock->sock);
+      return NULL;
     }
 
-  memset( &output, 0x00, sizeof(struct sockaddr_ll));
-  output.sll_family = AF_PACKET;
-  output.sll_ifindex   = ifr.ifr_ifindex;
-  output.sll_protocol  = htons(protocol);
+  memset( &ret_sock->output, 0x00, sizeof(struct sockaddr_ll));
+  ret_sock->output.sll_family = AF_PACKET;
+  ret_sock->output.sll_ifindex   = ifr.ifr_ifindex;
+  ret_sock->output.sll_protocol  = htons(protocol);
   
   /* Is the interface up? */
-  ioctl( ret_sock, SIOCGIFFLAGS, &ifr);
+  ioctl( ret_sock->sock, SIOCGIFFLAGS, &ifr);
   if ( (ifr.ifr_flags & IFF_UP) == 0)
     {
       printf("Interface %s is down\n", iface );
-      close(ret_sock);
-      return EXIT_FAILURE;
+      close(ret_sock->sock);
+      return NULL;
     }
   
   return ret_sock;
 }
 
-int pkt_send( int sock, void * buffer, int length  )
+int pkt_send( pkt_ctx_t * sock, void * buffer, int length  )
 {
-  return sendto( sock, buffer, length, 0, (struct sockaddr *)&output, sizeof(output));
+  return sendto( sock->sock, buffer, length, 0, (struct sockaddr *)&sock->output, sizeof(sock->output));
 }
 
-int pkt_recv( int sock, void * buffer, int length )
+int pkt_recv( pkt_ctx_t * sock, void * buffer, int length )
 {
-  return recv( sock, buffer, length, 0 );
+  return recv( sock->sock, buffer, length, 0 );
 }
 
-void pkt_close( int sock )
+void pkt_close( pkt_ctx_t * sock )
 {
-  close(sock);
+  if ( sock )
+    {
+      close(sock->sock);
+      free(sock->iface);
+      free(sock);
+    }
 }
