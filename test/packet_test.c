@@ -9,6 +9,7 @@
 #include "packet.h"
 #include "ethernet.h"
 #include "arp.h"
+#include "ip.h"
 
 int main ( int argc, char **argv )
 {
@@ -91,5 +92,28 @@ int main ( int argc, char **argv )
 	   eaddr.ether_addr_octet[5]);
   }
 
+  /* test IP */
+  if ( argc > 3 )
+  {
+    in_addr_t destaddr;
+
+    printf("Testing ip packet ... ");
+    destaddr = inet_addr(argv[3]);
+    sock = ip_socket( argv[1], &destaddr, 0 );
+    if ( sock < 0 )
+      {
+	perror("eth_socket");
+	return EXIT_FAILURE;
+      }
+    if ( ip_sendto( sock, "It works!!!", 12, inet_addr(argv[2]) ) < 0 )
+      {
+	perror("ip_sendto");
+	return EXIT_FAILURE;
+      }
+    
+    ip_close( sock );
+    printf("OK\n");
+  }
+  
   return EXIT_SUCCESS;
 }
