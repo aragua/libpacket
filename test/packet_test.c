@@ -2,9 +2,13 @@
 #include <stdlib.h>
 #include <linux/if_ether.h>
 #include <net/ethernet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "packet.h"
 #include "ethernet.h"
+#include "arp.h"
 
 int main ( int argc, char **argv )
 {
@@ -12,7 +16,7 @@ int main ( int argc, char **argv )
 
   if ( argc <= 1 )
     {
-      printf("Usage:\n\t%s <iface>\n", argv[0]);
+      printf("Usage:\n\t%s <iface> [ip]\n", argv[0]);
       return EXIT_FAILURE;
     }
 
@@ -62,6 +66,29 @@ int main ( int argc, char **argv )
     
     eth_close( sock );
     printf("OK\n");
+  }
+
+  /* test ARP */
+  if ( argc > 2 )
+  {
+    struct ether_addr eaddr;
+
+    printf("Testing arp ... ");
+
+    if ( arp( argv[1], inet_addr(argv[2]), &eaddr ) < 0 )
+      {
+	perror("arp");
+	return EXIT_FAILURE;
+      }
+
+    printf("OK : %s is at %02x:%02x:%02x:%02x:%02x:%02x\n",
+	   argv[2],
+	   eaddr.ether_addr_octet[0],
+	   eaddr.ether_addr_octet[1],
+	   eaddr.ether_addr_octet[2],
+	   eaddr.ether_addr_octet[3],
+	   eaddr.ether_addr_octet[4],
+	   eaddr.ether_addr_octet[5]);
   }
 
   return EXIT_SUCCESS;
