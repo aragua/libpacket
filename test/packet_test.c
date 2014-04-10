@@ -69,7 +69,7 @@ int main ( int argc, char **argv )
         printf("OK\n");
     }
 
-    /* test ARP */
+    /* test arp.c */
     if ( argc > 2 )
     {
         struct ether_addr eaddr;
@@ -92,7 +92,7 @@ int main ( int argc, char **argv )
                 eaddr.ether_addr_octet[5]);
     }
 
-    /* test IP */
+    /* test ip.c */
     if ( argc > 3 )
     {
         in_addr_t destaddr;
