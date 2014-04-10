@@ -49,6 +49,7 @@ pkt_ctx_t * ip_socket( char * iface, in_addr_t * ipaddr, int protocol )
         ret->iphdr.check = 0;
         memcpy( &ret->iphdr.saddr, ipaddr, sizeof(in_addr_t) );
         memset( &ret->iphdr.daddr, 0, sizeof(in_addr_t) );
+        ret->data_offset = ret->iphdr_offset + ret->iphdr.ihl * 4;
     }
 
     return ret;
@@ -57,7 +58,27 @@ pkt_ctx_t * ip_socket( char * iface, in_addr_t * ipaddr, int protocol )
 int ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
 {
     int ret = 0;
-    char * buf;
+    char * buf, *databuf;
+
+    buf = malloc( sock->iphdr_offset + sizeof(sock->iphdr) + length );
+    if ( !buf )
+        return -1;
+
+    /* copy ip data */
+    databuf = buf + sock->data_offset;
+    memcpy( databuf, buffer, length );
+
+    ret = _ip_sendto( sock, buf, sizeof(sock->iphdr) + length, ipaddr );
+
+    free(buf);
+
+    return ret;
+}
+
+int _ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
+{
+    int ret = 0;
+    char *ipbuf, *databuf;
     struct ether_addr eaddr;
 
     if ( arp( sock->iface, ipaddr, &eaddr ) < 0 )
@@ -66,23 +87,32 @@ int ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
         return EXIT_FAILURE;
     }
 
-    /* Todo : manage a pool of buffer in order to avoid malloc for each packet */
-    buf = malloc( sizeof(sock->iphdr) + length );
-    if ( !buf )
-        return -1;
-    memcpy( buf, &sock->iphdr, sizeof(sock->iphdr) );
-    memcpy( &((struct iphdr *)buf)->daddr, &ipaddr, 4 );
-    ((struct iphdr *)buf)->tot_len += htons(length);
-    memcpy( buf + sizeof(sock->iphdr), buffer, length );
-    ((struct iphdr *)buf)->check += ip_checksum(buf,((struct iphdr *)buf)->ihl*4);
-    ret = eth_sendto( sock, buf, sizeof(sock->iphdr) + length, eaddr );
-    free(buf);
+    /* copy ip header */
+    ipbuf = buffer + sock->iphdr_offset;
+    memcpy( ipbuf, &sock->iphdr, sizeof(sock->iphdr) );
+    memcpy( &((struct iphdr *)ipbuf)->daddr, &ipaddr, 4 );
+    ((struct iphdr *)ipbuf)->tot_len += htons(length);
+    ((struct iphdr *)ipbuf)->check += ip_checksum(ipbuf,((struct iphdr *)ipbuf)->ihl*4);
+
+    /* copy ip data */
+    databuf = buffer + sock->data_offset;
+    memcpy( databuf, buffer, length );
+
+    ret = _eth_sendto( sock, buffer, sizeof(sock->iphdr) + length, eaddr );
+
     return ret;
 }
 
 int ip_recv( pkt_ctx_t * sock, void * buffer, int length )
 {
-    return eth_recv( sock, buffer, length );
+    int ret = 0;
+    void * buf;
+    buf = malloc(sock->mtu_size);
+    ret = eth_recv( sock, buf, length );
+    if ( ret < sock->data_offset )
+        return -1;
+    memcpy( buf + sock->data_offset, buffer, ret - sock->data_offset );
+    return ret - sock->data_offset;
 }
 
 void ip_close( pkt_ctx_t * sock )

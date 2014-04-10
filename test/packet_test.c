@@ -26,7 +26,7 @@ int main ( int argc, char **argv )
     {
         printf("Testing raw packet ... ");
         sock = pkt_socket( argv[1], ETH_P_IP );
-        if ( sock < 0 )
+        if ( !sock )
         {
             perror("pkt_socket");
             return EXIT_FAILURE;
@@ -50,7 +50,7 @@ int main ( int argc, char **argv )
 
         printf("Testing ethernet packet ... ");
         sock = eth_socket( argv[1], ETH_P_ALL );
-        if ( sock < 0 )
+        if ( !sock )
         {
             perror("eth_socket");
             return EXIT_FAILURE;
@@ -100,7 +100,7 @@ int main ( int argc, char **argv )
         printf("Testing ip packet ... ");
         destaddr = inet_addr(argv[3]);
         sock = ip_socket( argv[1], &destaddr, 0 );
-        if ( sock < 0 )
+        if ( !sock )
         {
             perror("eth_socket");
             return EXIT_FAILURE;
