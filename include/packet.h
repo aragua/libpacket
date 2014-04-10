@@ -12,12 +12,16 @@
 typedef struct pkt_ctx_s pkt_ctx_t;
 struct pkt_ctx_s
 {
-  int sock;
-  char * iface;
-  int protocol;
-  struct sockaddr_ll output;
-  struct ether_header ethhdr;
-  struct iphdr iphdr;
+    int sock;
+    char * iface;
+    int protocol;
+    struct sockaddr_ll output;
+    /* layer 2*/
+    struct ether_header ethhdr;
+    size_t ethhdr_len;
+    /* layer 3*/
+    struct iphdr iphdr;
+    size_t iphdr_len;
 };
 
 pkt_ctx_t * pkt_socket( char * iface, int protocol );
