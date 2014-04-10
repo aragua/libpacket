@@ -41,7 +41,7 @@ install(TARGETS packet
 	COMPONENT libraries)
 
 install(FILES ${include_files}
-	DESTINATION include
+	DESTINATION include/libpacket
 	COMPONENT headers)
 
 install(TARGETS packet_test
