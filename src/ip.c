@@ -68,7 +68,7 @@ int ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
     databuf = buf + sock->data_offset;
     memcpy( databuf, buffer, length );
 
-    ret = _ip_sendto( sock, buf, sizeof(sock->iphdr) + length, ipaddr );
+    ret = _ip_sendto( sock, buf, length, ipaddr );
 
     free(buf);
 
@@ -78,7 +78,7 @@ int ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
 int _ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
 {
     int ret = 0;
-    char *ipbuf, *databuf;
+    char *ipbuf;
     struct ether_addr eaddr;
 
     if ( arp( sock->iface, ipaddr, &eaddr ) < 0 )
@@ -93,10 +93,6 @@ int _ip_sendto( pkt_ctx_t * sock, void * buffer, int length, in_addr_t ipaddr )
     memcpy( &((struct iphdr *)ipbuf)->daddr, &ipaddr, 4 );
     ((struct iphdr *)ipbuf)->tot_len += htons(length);
     ((struct iphdr *)ipbuf)->check += ip_checksum(ipbuf,((struct iphdr *)ipbuf)->ihl*4);
-
-    /* copy ip data */
-    databuf = buffer + sock->data_offset;
-    memcpy( databuf, buffer, length );
 
     ret = _eth_sendto( sock, buffer, sizeof(sock->iphdr) + length, eaddr );
 
