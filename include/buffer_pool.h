@@ -16,11 +16,11 @@ struct buf_pool_s
     buf_pool_entry_t * buf;
 };
 
-int alloc_buffers( buf_pool_t * pool, int pool_size, int buffer_size );
+int alloc_pool( buf_pool_t * pool, int pool_size, int buffer_size );
 
 void * get_buffer( buf_pool_t * pool);
 int free_buffer( buf_pool_t * pool, void * buffer );
 
-void free_buffers( buf_pool_t * pool );
+void free_pool( buf_pool_t * pool );
 
 #endif /* BUFFER_POOL_H */
