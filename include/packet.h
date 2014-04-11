@@ -9,13 +9,6 @@
 #include <netpacket/packet.h>
 #include <linux/ip.h>
 
-typedef struct pkt_buf_pool_s pkt_buf_pool_t;
-struct pkt_buf_pool_s
-{
-    int free;
-    void * buf;
-};
-
 typedef struct pkt_ctx_s pkt_ctx_t;
 struct pkt_ctx_s
 {
@@ -31,24 +24,8 @@ struct pkt_ctx_s
     off_t iphdr_offset;
     /* layer 4 & + */
     off_t data_offset;
-    /* data buffers */
-    int rx_buf_nbr;
-    pkt_buf_pool_t * rx_stack;
 
-    int tx_buf_nbr;
-    pkt_buf_pool_t * tx_stack;
 };
-
-int get_dflt_rx_stack_entries();
-void set_dflt_rx_stack_entries( int rx );
-int get_dflt_tx_stack_entries();
-void set_dflt_tx_stack_entries( int tx );
-
-void * get_rx_buffer( pkt_ctx_t * sock );
-int free_rx_buffer( pkt_ctx_t * sock, void * buffer );
-
-void * get_tx_buffer( pkt_ctx_t * sock );
-int free_tx_buffer( pkt_ctx_t * sock, void * buffer );
 
 pkt_ctx_t * pkt_socket( char * iface, int protocol );
 
