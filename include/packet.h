@@ -8,6 +8,7 @@
 
 #include <netpacket/packet.h>
 #include <linux/ip.h>
+#include <net/ethernet.h>
 
 typedef struct pkt_ctx_s pkt_ctx_t;
 struct pkt_ctx_s
