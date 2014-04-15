@@ -26,19 +26,32 @@ add_library(
         ${source_files}
 )
 
+add_library(
+        packet-static
+        STATIC
+        ${source_files}
+)
+
 add_executable(
         packet_test
         test/packet_test.c
 )
+
+#add_executable(
+#       bench
+#        test/bench.c
+#)
 
 target_link_libraries(
         packet_test
         packet
 )
 
-install(TARGETS packet
+install(
+	TARGETS packet
 	DESTINATION lib
-	COMPONENT libraries)
+	COMPONENT libraries
+)
 
 install(FILES ${include_files}
 	DESTINATION include/libpacket
