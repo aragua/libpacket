@@ -3,7 +3,9 @@
 #include <string.h> 
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <net/if.h> 
+#include <net/if.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "ethernet.h"
@@ -108,6 +110,19 @@ int ip_recv( pkt_ctx_t * sock, void * buffer, int length )
     if ( ret < sock->data_offset )
         return -1;
     memcpy( buf + sock->data_offset, buffer, ret - sock->data_offset );
+    return ret - sock->data_offset;
+}
+
+int ip_recvfrom( pkt_ctx_t * sock, void * buffer, int length, in_addr_t * ipaddr )
+{
+    int ret = 0;
+    void * buf;
+    buf = malloc(sock->mtu_size);
+    ret = eth_recv( sock, buf, length );
+    if ( ret < sock->data_offset )
+        return -1;
+    memcpy( buf + sock->data_offset, buffer, ret - sock->data_offset );
+    memcpy( ipaddr, &((struct iphdr *)buf+sock->iphdr_offset)->saddr, 4);
     return ret - sock->data_offset;
 }
 
