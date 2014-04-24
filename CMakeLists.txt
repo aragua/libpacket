@@ -37,15 +37,26 @@ add_executable(
         test/packet_test.c
 )
 
+target_link_libraries(
+        packet_test
+        packet
+)
+
+add_executable(
+        dump
+        test/dump.c
+)
+
+target_link_libraries(
+        dump
+        packet
+)
+
 #add_executable(
 #       bench
 #        test/bench.c
 #)
 
-target_link_libraries(
-        packet_test
-        packet
-)
 
 install(
 	TARGETS packet
