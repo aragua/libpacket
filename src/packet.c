@@ -50,6 +50,8 @@ pkt_ctx_t * pkt_socket( char * iface, int protocol )
     ret_sock->output.sll_ifindex   = ifr.ifr_ifindex;
     ret_sock->output.sll_protocol  = htons(protocol);
 
+	bind( ret_sock->sock, (struct sockaddr*)&ret_sock->output, sizeof(ret_sock->output));
+
     /* Is the interface up? */
     ioctl( ret_sock->sock, SIOCGIFFLAGS, &ifr);
     if ( (ifr.ifr_flags & IFF_UP) == 0)
