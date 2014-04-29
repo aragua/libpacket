@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <netdb.h>
+#include <sys/time.h>
+
 
 #include "packet.h"
 #include "ethernet.h"
@@ -66,7 +68,30 @@ static void analyze_packet( char * buffer, int len )
         case ETH_P_ARP:
             show_arp( buffer + ETH_HLEN, len - ETH_HLEN );
             break;
-        default:
+		case ETH_P_ALL:
+		{
+			static struct timeval last_tv = { 0, 0 };
+			struct timeval cur_tv, diff_tv;
+			gettimeofday( &cur_tv, NULL );
+			if ( last_tv.tv_sec != 0 )
+			{
+				int carry = 0;
+				if ( last_tv.tv_usec > cur_tv.tv_usec )
+				{
+					diff_tv.tv_usec = 1000000 + cur_tv.tv_usec - last_tv.tv_usec;
+					carry = 1;
+				}
+				else
+					diff_tv.tv_usec = cur_tv.tv_usec - last_tv.tv_usec;
+
+				diff_tv.tv_sec = cur_tv.tv_sec - last_tv.tv_sec - carry;
+
+				printf("%lu%06lu\n", diff_tv.tv_sec, diff_tv.tv_usec );
+			}
+			last_tv = cur_tv;
+			break;
+		}
+		default:
             printf("Unknown type: %d\n",  ((unsigned short*)buffer)[6] );
             break;
         }
