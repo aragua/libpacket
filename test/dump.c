@@ -16,11 +16,44 @@
 #include "arp.h"
 #include "ip.h"
 
+char * MAC_to_str( const uint8_t * addr )
+{
+	static char return_string[32];
+
+	if ( !addr )
+		return NULL;
+
+	snprintf( return_string,
+			  32,
+			  "%02x:%02x:%02x:%02x:%02x:%02x",
+			  addr[0]&0xff, addr[1]&0xff, addr[2]&0xff,
+			addr[3]&0xff, addr[4]&0xff, addr[5]&0xff
+			);
+	return return_string;
+}
+
 static void show_arp( char * buffer, int len )
 {
-    if ( !buffer || len < 0 )
-        return;
-    printf("ARP\n");
+	struct in_addr tmp;
+	arp_t * hdr;
+
+	if ( !buffer || len < 8 )
+		return;
+
+	hdr = (arp_t *)buffer;
+	switch ( ntohs(hdr->opcode) )
+	{
+	case 0x1:
+		memcpy( &tmp.s_addr, hdr->dest_ip, 4);
+		printf("ARP request - MAC %s ask for %s\n", MAC_to_str(hdr->src_mac), inet_ntoa(tmp) );
+		break;
+	case 0x2:
+		memcpy( &tmp.s_addr, hdr->src_ip, 4);
+		printf("ARP reply - IP %s is at %s\n", inet_ntoa(tmp), MAC_to_str(hdr->src_mac) );
+		break;
+	default :
+		printf("Bad ARP packet\n");
+	}
 }
 
 static void show_ip( char * buffer, int len )
@@ -29,7 +62,7 @@ static void show_ip( char * buffer, int len )
     struct iphdr * hdr;
     struct protoent * proto;
 
-    if ( len < 20 )
+	if ( len < 20 )
         return;
 
     hdr = (struct iphdr *) buffer;
