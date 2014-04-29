@@ -90,9 +90,8 @@ static void analyze_packet( char * buffer, int len )
     {
         printf("Mac dest: %02x:%02x:%02x:%02x:%02x:%02x\n",
                buffer[0]&0xff,buffer[1]&0xff,buffer[2]&0xff,buffer[3]&0xff,buffer[4]&0xff,buffer[5]&0xff);
-        printf("Mac dest: %02x:%02x:%02x:%02x:%02x:%02x\n",
+		printf("Mac src : %02x:%02x:%02x:%02x:%02x:%02x\n",
                buffer[6]&0xff,buffer[7]&0xff,buffer[8]&0xff,buffer[9]&0xff,buffer[10]&0xff,buffer[11]&0xff);
-        printf("Mac type: %04x\n", ntohs(hdr->ether_type) );
         switch( ntohs(hdr->ether_type) )
         {
         case ETH_P_IP:
@@ -125,7 +124,7 @@ static void analyze_packet( char * buffer, int len )
 			break;
 		}
 		default:
-            printf("Unknown type: %d\n",  ((unsigned short*)buffer)[6] );
+			printf("Mac type: %04x\n", ntohs(hdr->ether_type) );
             break;
         }
         printf("\n");
