@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h> 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -79,4 +80,21 @@ void eth_close( pkt_ctx_t * sock )
     {
         pkt_close(sock);
     }
+}
+
+
+char * MAC_to_str( const uint8_t * addr )
+{
+	static char return_string[32];
+
+	if ( !addr )
+		return NULL;
+
+	snprintf( return_string,
+			  32,
+			  "%02x:%02x:%02x:%02x:%02x:%02x",
+			  addr[0]&0xff, addr[1]&0xff, addr[2]&0xff,
+			addr[3]&0xff, addr[4]&0xff, addr[5]&0xff
+			);
+	return return_string;
 }

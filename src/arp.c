@@ -4,6 +4,9 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "arp.h"
 #include "ethernet.h"
@@ -76,4 +79,28 @@ int arp( char * iface, in_addr_t ip, struct ether_addr * eaddr )
     eth_close( sock );
 
     return 0;
+}
+
+void show_arp( uint8_t * buffer, int len )
+{
+	struct in_addr tmp;
+	arp_t * hdr;
+
+	if ( !buffer || len < 8 )
+		return;
+
+	hdr = (arp_t *)buffer;
+	switch ( ntohs(hdr->opcode) )
+	{
+	case 0x1:
+		memcpy( &tmp.s_addr, hdr->dest_ip, 4);
+		printf("ARP request - MAC %s ask for %s\n", MAC_to_str(hdr->src_mac), inet_ntoa(tmp) );
+		break;
+	case 0x2:
+		memcpy( &tmp.s_addr, hdr->src_ip, 4);
+		printf("ARP reply - IP %s is at %s\n", inet_ntoa(tmp), MAC_to_str(hdr->src_mac) );
+		break;
+	default :
+		printf("Bad ARP packet\n");
+	}
 }

@@ -17,4 +17,6 @@ int _eth_sendto( pkt_ctx_t * sock,
 int eth_recv( pkt_ctx_t * sock, void * buffer, int length );
 void eth_close( pkt_ctx_t * sock );
 
+char * MAC_to_str( const uint8_t * addr );
+
 #endif /* _ETHERNET_H_ */

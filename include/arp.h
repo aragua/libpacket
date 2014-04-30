@@ -22,4 +22,6 @@ struct arp_s{
 
 int arp( char * iface, in_addr_t ip, struct ether_addr * eaddr );
 
+void show_arp( uint8_t * buffer, int len );
+
 #endif /*_ARP_H */

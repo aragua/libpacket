@@ -12,4 +12,6 @@ int ip_recv( pkt_ctx_t * sock, void * buffer, int length );
 int ip_recvfrom( pkt_ctx_t * sock, void * buffer, int length, in_addr_t * addr );
 void ip_close( pkt_ctx_t * sock );
 
+void show_ip( uint8_t * buffer, int len );
+
 #endif /* _IP_H_ */

@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #include "ethernet.h"
 #include "arp.h"
@@ -132,4 +133,25 @@ void ip_close( pkt_ctx_t * sock )
     {
         eth_close(sock);
     }
+}
+
+void show_ip(uint8_t * buffer, int len )
+{
+	struct in_addr tmp;
+	struct iphdr * hdr;
+	struct protoent * proto;
+
+	if ( len < 20 )
+		return;
+
+	hdr = (struct iphdr *) buffer;
+
+	tmp.s_addr = hdr->daddr;
+	printf("IP dest: %s\n", inet_ntoa(tmp) );
+
+	tmp.s_addr = hdr->saddr;
+	printf("IP src: %s\n", inet_ntoa(tmp) );
+
+	proto = getprotobynumber(hdr->protocol);
+	printf("IP protocol: %s\n", proto->p_name );
 }
