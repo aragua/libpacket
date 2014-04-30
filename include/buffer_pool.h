@@ -4,16 +4,16 @@
 typedef struct buf_pool_entry_s buf_pool_entry_t;
 struct buf_pool_entry_s
 {
-    int free;
-    size_t sz;
-    void * buf;
+	int free;
+	size_t sz;
+	void * buf;
 };
 
 typedef struct buf_pool_s buf_pool_t;
 struct buf_pool_s
 {
-    size_t sz;
-    buf_pool_entry_t * buf;
+	size_t sz;
+	buf_pool_entry_t * buf;
 };
 
 int alloc_pool( buf_pool_t * pool, int pool_size, int buffer_size );

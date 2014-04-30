@@ -7,13 +7,13 @@
 
 pkt_ctx_t * eth_socket( char * iface, int protocol );
 int eth_sendto( pkt_ctx_t * sock,
-                void * buffer,
-                int length,
-                struct ether_addr eaddr );
+				void * buffer,
+				int length,
+				struct ether_addr eaddr );
 int _eth_sendto( pkt_ctx_t * sock,
-                 void * buffer,
-                 int length,
-                 struct ether_addr eaddr );
+				 void * buffer,
+				 int length,
+				 struct ether_addr eaddr );
 int eth_recv( pkt_ctx_t * sock, void * buffer, int length );
 void eth_close( pkt_ctx_t * sock );
 

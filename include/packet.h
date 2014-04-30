@@ -13,19 +13,18 @@
 typedef struct pkt_ctx_s pkt_ctx_t;
 struct pkt_ctx_s
 {
-    int sock;
-    char * iface;
-    int mtu_size;
-    int protocol;
-    struct sockaddr_ll output;
-    /* layer 2*/
-    struct ether_header ethhdr;
-    /* layer 3*/
-    struct iphdr iphdr;
-    off_t iphdr_offset;
-    /* layer 4 & + */
-    off_t data_offset;
-
+	int sock;
+	char * iface;
+	int mtu_size;
+	int protocol;
+	struct sockaddr_ll output;
+	/* layer 2*/
+	struct ether_header ethhdr;
+	/* layer 3*/
+	struct iphdr iphdr;
+	off_t iphdr_offset;
+	/* layer 4 & + */
+	off_t data_offset;
 };
 
 pkt_ctx_t * pkt_socket( char * iface, int protocol );
