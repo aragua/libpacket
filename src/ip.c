@@ -12,6 +12,7 @@
 #include "ethernet.h"
 #include "arp.h"
 #include "ip.h"
+#include "tcp.h"
 
 static uint16_t ip_checksum( const void * data, size_t data_len )
 {
@@ -136,12 +137,6 @@ void ip_close( pkt_ctx_t * sock )
 }
 
 
-#define TCP_FIN 0x01
-#define TCP_SYN 0x02
-#define TCP_RST 0x04
-#define TCP_PSH 0x08
-#define TCP_ACK 0x10
-
 void show_ip(uint8_t * buffer, int len )
 {
 	struct in_addr tmp;
@@ -157,23 +152,28 @@ void show_ip(uint8_t * buffer, int len )
 	printf("Total length %d\n", ntohs(hdr->tot_len) );
 	printf("Id: %u, fragmet offset: %04x, ttl=%u\n", hdr->id, hdr->frag_off, hdr->ttl );
 
+	/* print src and dest IP address */
 	tmp.s_addr = hdr->daddr;
 	printf("IP dest: %s\n", inet_ntoa(tmp) );
 	tmp.s_addr = hdr->saddr;
 	printf("IP src: %s\n", inet_ntoa(tmp) );
 
+	/* Check CRC */
+	old_crc = hdr->check;
+	hdr->check = 0x0000;
+	crc = ip_checksum( hdr, hdr->ihl * 4 );
+	if ( crc == old_crc )
+		printf("CRC is ok\n");
+	else
+		printf("CRC is ko : old %u - new %u\n", old_crc, crc );
+	hdr->check = old_crc;
+
+	/* Show payload contents*/
 	switch ( hdr->protocol )
 	{
 		case 0x06 :
 		{
-			uint16_t tcp_flags = ntohs(*((uint16_t *)(buffer + (hdr->ihl * 4) + 12))) & 0x0fff;
-
-			printf("TCP : %s%s%s%s%s\n",
-				   (tcp_flags & TCP_FIN) != 0 ? "FIN,":"",
-				   (tcp_flags & TCP_SYN) != 0 ? "SYN,":"",
-				   (tcp_flags & TCP_RST) != 0 ? "RST,":"",
-				   (tcp_flags & TCP_PSH) != 0 ? "PSH,":"",
-				   (tcp_flags & TCP_ACK) != 0 ? "ACK":""  );
+			show_tcp_header( buffer + (hdr->ihl * 4), len - (hdr->ihl * 4));
 			break;
 		}
 		default:
@@ -186,13 +186,4 @@ void show_ip(uint8_t * buffer, int len )
 		}
 	}
 
-	/* Check CRC */
-	old_crc = hdr->check;
-	hdr->check = 0x0000;
-	crc = ip_checksum( hdr, hdr->ihl * 4 );
-	if ( crc == old_crc )
-		printf("CRC is ok\n");
-	else
-		printf("CRC is ko : old %u - new %u\n", old_crc, crc );
-	hdr->check = old_crc;
 }
