@@ -146,15 +146,19 @@ void show_ip(uint8_t * buffer, int len )
 {
 	struct in_addr tmp;
 	struct iphdr * hdr;
+	uint16_t crc, old_crc;
 
 	if ( len < 20 )
 		return;
 
 	hdr = (struct iphdr *) buffer;
 
+	printf("Version: %u, IHL: %u\n", hdr->version, hdr->ihl );
+	printf("Total length %d\n", ntohs(hdr->tot_len) );
+	printf("Id: %u, fragmet offset: %04x, ttl=%u\n", hdr->id, hdr->frag_off, hdr->ttl );
+
 	tmp.s_addr = hdr->daddr;
 	printf("IP dest: %s\n", inet_ntoa(tmp) );
-
 	tmp.s_addr = hdr->saddr;
 	printf("IP src: %s\n", inet_ntoa(tmp) );
 
@@ -181,4 +185,14 @@ void show_ip(uint8_t * buffer, int len )
 			break;
 		}
 	}
+
+	/* Check CRC */
+	old_crc = hdr->check;
+	hdr->check = 0x0000;
+	crc = ip_checksum( hdr, hdr->ihl * 4 );
+	if ( crc == old_crc )
+		printf("CRC is ok\n");
+	else
+		printf("CRC is ko : old %u - new %u\n", old_crc, crc );
+	hdr->check = old_crc;
 }
