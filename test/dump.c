@@ -17,6 +17,22 @@
 #include "ip.h"
 
 
+static void dump_packet( uint8_t * buffer, int len )
+{
+	int idx;
+	if ( !buffer || len <= 0 )
+		printf("No buffer to treat\n");
+
+	printf("Buffer size %d:\n\t", len );
+	for ( idx = 0; idx < len ; idx++ )
+	{
+		printf("%02x", buffer[idx]&0xff );
+		if ( idx % 16 == 15 )
+			printf("\n\t");
+	}
+	printf("\n");
+}
+
 static void analyze_packet( uint8_t * buffer, int len )
 {
 	struct ether_header * hdr;
@@ -100,7 +116,11 @@ int main ( int argc, char **argv )
 			pkt_close( sock );
 			return EXIT_FAILURE;
 		}
+		printf("############# Start ############\n");
+		dump_packet(buffer,ret);
 		analyze_packet( buffer, ret);
+		printf("#############  End  #############\n");
+
 	}
 
 	pkt_close( sock );
