@@ -23,12 +23,14 @@ void dump_packet( uint8_t * buffer, int len )
 	if ( !buffer || len <= 0 )
 		printf("No buffer to treat\n");
 
-	printf("Buffer size %d:\n\t", len );
+	printf("Buffer size %d:\n", len );
 	for ( idx = 0; idx < len ; idx++ )
 	{
-		printf("%02x", buffer[idx]&0xff );
+		if ( idx % 16 == 0 )
+			printf("%08x", idx );
+		printf(" %02x", buffer[idx]&0xff );
 		if ( idx % 16 == 15 )
-			printf("\n\t");
+			printf(" \n");
 	}
 	printf("\n");
 }
