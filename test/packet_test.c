@@ -10,6 +10,7 @@
 #include "ethernet.h"
 #include "arp.h"
 #include "ip.h"
+#include "analyze.h"
 
 int main ( int argc, char **argv )
 {
@@ -112,6 +113,55 @@ int main ( int argc, char **argv )
 		}
 
 		ip_close( sock );
+		printf("OK\n");
+	}
+
+	/* test tcp connection */
+	{
+		int ret = 0 ;
+		uint8_t buffer[1500], data[] = { 0x08, 0x00, 0x27, 0x18, 0xbc, 0x13,
+										 0x08, 0x00, 0x27, 0xf6, 0x52, 0xa4,
+										 0x08, 0x00, 0x45, 0x00, 0x00, 0x3c,
+										 0x97, 0x85, 0x40, 0x00, 0x40, 0x06,
+										 0x8f, 0x34, 0x0a, 0x00, 0x00, 0x01,
+										 0x0a, 0x00, 0x00, 0x02, 0x91, 0x40,
+										 0x00, 0x16, 0xe9, 0x69, 0x08, 0xf8,
+										 0x00, 0x00, 0x00, 0x00, 0xa0, 0x02,
+										 0x72, 0x10, 0x9d, 0xab, 0x00, 0x00,
+										 0x02, 0x04, 0x05, 0xb4, 0x04, 0x02,
+										 0x08, 0x0a, 0x01, 0x0d, 0x9f, 0x7d,
+										 0x00, 0x00, 0x00, 0x00, 0x01, 0x03,
+										 0x03, 0x06 };
+
+		printf("Testing tcp packet ... ");
+
+		sock = pkt_socket( argv[1], ETH_P_IP );
+		if ( !sock )
+		{
+			perror("pkt_socket");
+			return EXIT_FAILURE;
+		}
+
+		if ( pkt_send( sock, data, 74 ) < 0 )
+		{
+			perror("pkt_send");
+			return EXIT_FAILURE;
+		}
+
+		ret = pkt_recv( sock, buffer, 1500 );
+		if ( ret < 0 )
+		{
+			perror("pkt_recv");
+			pkt_close( sock );
+			return EXIT_FAILURE;
+		}
+		printf("############# Start ############\n");
+		dump_packet(buffer,ret);
+		analyze_packet( buffer, ret);
+		printf("#############  End  #############\n");
+
+		pkt_close( sock );
+
 		printf("OK\n");
 	}
 
