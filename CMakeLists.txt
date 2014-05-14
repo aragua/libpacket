@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 2.6)
 project(packet)
 
-set(CMAKE_C_FLAGS "-Wall -Werror -g -O0")
+set(CMAKE_C_FLAGS " -Wall -Werror -g -O0 ")
 
 set(LIBRARY_OUTPUT_PATH lib)
 set(EXECUTABLE_OUTPUT_PATH bin)
 include_directories(include)
+
+set(CMAKE_REQUIRED_INCLUDES /usr/include)
+include(CheckIncludeFiles)
+CHECK_INCLUDE_FILES("net/netmap_user.h;net/netmap.h" HAVE_NETMAP)
+
+if(HAVE_NETMAP)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_NETMAP ")
+endif()
 
 file(
         GLOB_RECURSE

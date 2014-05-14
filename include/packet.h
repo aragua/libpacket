@@ -10,9 +10,24 @@
 #include <linux/ip.h>
 #include <net/ethernet.h>
 
+#define HAVE_NETMAP 1
+
+#ifdef HAVE_NETMAP
+#define NETMAP_WITH_LIBS
+#include <net/netmap_user.h>
+#endif
+
+#define	AFPACKET_MODE 1
+#define	NETMAP_MODE 2
+
 typedef struct pkt_ctx_s pkt_ctx_t;
 struct pkt_ctx_s
 {
+	int mode;
+#ifdef HAVE_NETMAP
+	int netmap_flags;
+	struct nm_desc * desc;
+#endif
 	int sock;
 	char * iface;
 	int mtu_size;
