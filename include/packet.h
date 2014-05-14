@@ -10,8 +10,6 @@
 #include <linux/ip.h>
 #include <net/ethernet.h>
 
-#define HAVE_NETMAP 1
-
 #ifdef HAVE_NETMAP
 #define NETMAP_WITH_LIBS
 #include <net/netmap_user.h>
